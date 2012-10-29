@@ -1,0 +1,4 @@
+=== 0.0.1 2012-10-27
+
+* First stab at ruby port
+  * Initial release 0.0.1

@@ -1,0 +1,7 @@
+History.txt
+Manifest.txt
+README.rdoc
+Rakefile
+lib/geodna.rb
+tasks/test.rake
+test/test_geodna.rb
