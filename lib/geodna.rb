@@ -1,4 +1,7 @@
+
 module GeoDNA
+  extend self
+
   VERSION = '0.0.1'
 
   RADIUS_OF_EARTH = 6378100.0
@@ -12,20 +15,21 @@ module GeoDNA
 
   SQRT2 = Math.sqrt(2.0)
 
-  def GeoDNA.f_mod( x, m )
-    # floating point modulus
-    return ( x % m + m ) % m;
-  end
+# Returns a GeoDNA code (which is a string) for latitude, longitude.
+# Possible options are:
+# * radians => true/false
+#   A true value means the latitude and longitude are in radians
+# * precision => Integer (defaults to 22)
+#   number of characters in the GeoDNA code.
+#   Note that any more than 22 chars and you're kinda splitting hairs.
+#
+# * *Args*    :
+#   - +latitude, longitude, options+
+# * *Returns* :
+#   - +String GeoDNA code+ representing (latitude, longitude)
+#
 
-  def GeoDNA.deg2rad(d)
-      ( d / 180.0 ) * Math::PI
-  end
-
-  def GeoDNA.rad2deg(r)
-      ( r / Math::PI ) * 180
-  end
-
-  def GeoDNA.encode( latitude, longitude, options={} )
+  def encode( latitude, longitude, options={} )
     precision = options['precision'] || 22
     radians   = options['radians']   || false
 
@@ -34,8 +38,8 @@ module GeoDNA
     lati = []
 
     if radians
-      latitude  = GeoDNA.rad2deg( latitude )
-      longitude = GeoDNA.rad2deg( longitude )
+      latitude  = rad2deg( latitude )
+      longitude = rad2deg( longitude )
     end
 
     if longitude < 0.0
@@ -73,7 +77,19 @@ module GeoDNA
     return geodna
   end
 
-  def GeoDNA.decode( geodna, options={} )
+# Returns an array [latitude, longitude] representing
+# the centre of the bounding box of the GeoDNA code.
+# Possible options are:
+# * radians => true/false
+#   A true value means the latitude and longitude returned
+#   will be in radians (default: false)
+#
+# * *Args*    :
+#   - +GeoDNA code+
+# * *Returns* :
+#   - +[latitude, longitude]+
+#
+  def decode( geodna, options={} )
     box = bounding_box( geodna )
     lati = box[0]
     loni = box[1]
@@ -81,14 +97,14 @@ module GeoDNA
     lon = ( loni[0] + loni[1] ) / 2.0
 
     if options['radians']
-      return [ GeoDNA.deg2rad( lat ), GeoDNA.deg2rad( lon ) ]
+      return [ deg2rad( lat ), deg2rad( lon ) ]
     end
     return [ lat, lon ]
   end
 
   #  # locates the min/max lat/lons around the geo_dna
 
-  def GeoDNA.bounding_box( geodna )
+  def bounding_box( geodna )
     chars = geodna.split(//)
 
     loni = []
@@ -118,15 +134,12 @@ module GeoDNA
       else
         lati = [ lati[0], ( lati[0] + lati[1] ) / 2.0 ]
       end
-
-      #puts "char is #{c}, map is #{cd}, loni is #{loni}, lati is #{lati}"
-
     end
 
     return [ lati, loni ]
   end
 
-  def GeoDNA.add_vector( geodna, dy, dx )
+  def add_vector( geodna, dy, dx )
     point = decode( geodna )
     lat = point[0]
     lon = point[1]
@@ -136,14 +149,22 @@ module GeoDNA
     ]
   end
 
-  def GeoDNA.normalise( lat, lon )
+  def normalise( lat, lon )
     return [
       f_mod( ( lat + 90.0 ),  180.0 ) - 90.0,
       f_mod( ( lon + 180.0 ), 360.0 ) - 180.0
     ]
   end
 
-  def GeoDNA.neighbours( geodna )
+# For a given GeoDNA code, returns an array of the eight neighbouring same-sized
+# GeoDNA codes.
+#
+# * *Args*    :
+#   - +GeoDNA code+
+# * *Returns* :
+#   - +[neigbouring codes]+
+#
+  def neighbours( geodna )
     box = bounding_box( geodna )
     lati = box[0]
     loni = box[1]
@@ -156,75 +177,87 @@ module GeoDNA
     [ -1, 0, 1 ].each do |y|
       [ -1, 0, 1 ].each do |x|
         if x != 0 || y != 0
-          centre = GeoDNA.add_vector( geodna, height * y, width * x )
-          neighbours.push( GeoDNA.encode( *centre ) )
+          centre = add_vector( geodna, height * y, width * x )
+          neighbours.push( encode( *centre ) )
         end
       end
     end
     return neighbours
   end
 
-  def GeoDNA.point_from_point_bearing_and_distance( geodna, bearing, distance, options={} )
+  def point_from_point_bearing_and_distance( geodna, bearing, distance, options={} )
     distance = distance * 1000; # make it metres instead of kilometres
     precision = options['precision'] || geodna.length
-    bits = GeoDNA.decode( geodna, { "radians" => true } )
+    bits = decode( geodna, { "radians" => true } )
     lat1 = bits[0]
     lon1 = bits[1]
     lat2 = Math.asin( Math.sin( lat1 ) * Math.cos( distance / RADIUS_OF_EARTH ) +
                       Math.cos( lat1 ) * Math.sin( distance / RADIUS_OF_EARTH ) * Math.cos( bearing ) )
     lon2 = lon1 + Math.atan2( Math.sin( bearing ) * Math.sin( distance / RADIUS_OF_EARTH ) * Math.cos( lat1 ),
                       Math.cos( distance / RADIUS_OF_EARTH ) - Math.sin( lat1 ) * Math.sin( lat2 ))
-    GeoDNA.encode( lat2, lon2, { "precision" => precision, "radians" => true } )
+    encode( lat2, lon2, { "precision" => precision, "radians" => true } )
   end
 
-  def GeoDNA.distance_in_km( ga, gb )
-      a = GeoDNA.decode( ga );
-      b = GeoDNA.decode( gb );
+  def distance_in_km( ga, gb )
+      a = decode( ga );
+      b = decode( gb );
 
       # if a[1] and b[1] have different signs, we need to translate
       # everything a bit in order for the formulae to work.
       if a[1] * b[1] < 0.0 && Math.abs( a[1] - b[1] ) > 180.0
-          a = GeoDNA.add_vector( ga, 0.0, 180.0 )
-          b = GeoDNA.add_vector( gb, 0.0, 180.0 )
+          a = add_vector( ga, 0.0, 180.0 )
+          b = add_vector( gb, 0.0, 180.0 )
       end
-      x = ( GeoDNA.deg2rad(b[1]) - GeoDNA.deg2rad(a[1]) ) * Math.cos( ( GeoDNA.deg2rad(a[0]) + GeoDNA.deg2rad(b[0])) / 2.0 )
-      y = ( GeoDNA.deg2rad(b[0]) - GeoDNA.deg2rad(a[0]) )
+      x = ( deg2rad(b[1]) - deg2rad(a[1]) ) * Math.cos( ( deg2rad(a[0]) + deg2rad(b[0])) / 2.0 )
+      y = ( deg2rad(b[0]) - deg2rad(a[0]) )
       d = Math.sqrt( x*x + y*y ) * RADIUS_OF_EARTH
       return d / 1000.0
   end
 
-  def GeoDNA.neighbours_within_radius( geodna, radius, options={} )
+
+# Returns a raw list of GeoDNA codes of a certain size contained within the
+# radius (specified in kilometres) about the point represented by a
+# code.
+#
+# The size of the returned codes will either be specified in options, or
+# will be the default (12).
+#
+# * *Args*    :
+#   - +GeoDNA code+
+#   - +Radius (in km)+
+#   - +Options+
+# * *Returns* :
+#   - +[neigbouring codes within radius]+def radius]+
+#
+  def neighbours_within_radius( geodna, radius, options={} )
       options['precision'] = options['precision'] || 12
 
       neighbours = []
       rh = radius * SQRT2
 
-      startp = GeoDNA.point_from_point_bearing_and_distance( geodna, -( Math::PI / 4 ), rh, options )
-        endp = GeoDNA.point_from_point_bearing_and_distance( geodna, Math::PI / 4, rh, options )
+      startp = point_from_point_bearing_and_distance( geodna, -( Math::PI / 4 ), rh, options )
+        endp = point_from_point_bearing_and_distance( geodna, Math::PI / 4, rh, options )
 
-      bbox = GeoDNA.bounding_box( startp )
-      bits = GeoDNA.decode( startp )
+      bbox = bounding_box( startp )
+      bits = decode( startp )
       slon = bits[1]
-      bits = GeoDNA.decode( endp )
+      bits = decode( endp )
       elon = bits[1]
       dheight = ( bbox[0][1] - bbox[0][0] ).abs
       dwidth  = ( bbox[1][1] - bbox[1][0] ).abs
 
-      n = GeoDNA.normalise( 0.0, ( elon - slon ).abs )
+      n = normalise( 0.0, ( elon - slon ).abs )
 
       delta = n[1].abs
       tlat = 0.0
       tlon = 0.0
       current = startp
 
-      #puts "elon: " + elon.to_s, "slon: " + slon.to_s, "n: " + n.to_s, "rh: " + rh.to_s
-      #puts "start: " + startp, "end: " + endp
-
       while tlat <= delta do
           while tlon <= delta do
-              cbits = GeoDNA.add_vector( current, 0.0, dwidth )
-              current = GeoDNA.encode( cbits[0], cbits[1], options )
-              d = GeoDNA.distance_in_km( current, geodna )
+              cbits = add_vector( current, 0.0, dwidth )
+              current = encode( cbits[0], cbits[1], options )
+              d = distance_in_km( current, geodna )
               if d <= radius
                   neighbours.push( current )
               end
@@ -232,18 +265,23 @@ module GeoDNA
           end
 
           tlat = tlat + dheight
-          bits = GeoDNA.add_vector( startp, -tlat , 0.0 )
-          current = GeoDNA.encode( bits[0], bits[1], options )
+          bits = add_vector( startp, -tlat , 0.0 )
+          current = encode( bits[0], bits[1], options )
           tlon = 0.0
       end
 
       return neighbours
   end
 
-  #  # This takes an array of GeoDNA codes and reduces it to its
-  #  # minimal set of codes covering the same area.
-  #  # Needs a more optimal impl.
-  def GeoDNA.reduce( geodna_codes )
+# This takes an array of GeoDNA codes and reduces it to its
+# minimal set of codes covering the same area.
+# Needs a more optimal impl.
+#
+# * *Args*    :
+#   - +[GeoDNA codes]+
+# * *Returns* :
+#   - +[Minimal covering set]+
+  def reduce( geodna_codes )
       # hash all the codes
       codes = {}
       geodna_codes.each do |code|
@@ -270,7 +308,24 @@ module GeoDNA
       if geodna_codes.length == reduced.length
           return reduced
       end
-      return GeoDNA.reduce( reduced )
+      return reduce( reduced )
+  end
+
+
+  #-----------------------------------------------
+
+  private
+
+  def f_mod( x, m )
+    return ( x % m + m ) % m;
+  end
+
+  def deg2rad(d)
+      ( d / 180.0 ) * Math::PI
+  end
+
+  def rad2deg(r)
+      ( r / Math::PI ) * 180
   end
 
 end
