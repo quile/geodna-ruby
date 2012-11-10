@@ -15,6 +15,60 @@ module GeoDNA
 
   SQRT2 = Math.sqrt(2.0)
 
+  class Point
+    def initialize( *args )
+      if args.length == 1
+        @point = args[0]
+        coords = GeoDNA.decode( @point )
+        @lat = coords[0]
+        @lon = coords[1]
+        @options = {
+          :radians => true,
+          :precision => @point.length,
+        }
+      else
+        @lat = args[0]
+        @lon = args[1]
+        if args.length > 2
+          @options = args[2]
+        else
+          @options = {
+            :radians => true,
+          }
+        end
+        @point = GeoDNA.encode( @lat, @lon, @options )
+      end
+    end
+
+    def to_s
+      return @point
+    end
+
+    def add_vector( dx, dy )
+      GeoDNA.add_vector( @point, dx, dy )
+    end
+
+    def neighbours
+      GeoDNA.neighbours( @point ).map { |p| Point.new( p ) }
+    end
+
+    def distance_in_km( geodna )
+      GeoDNA.distance_in_km( @point, geodna )
+    end
+
+    def neighbours_within_radius( radius, options={} )
+      GeoDNA.neighbours_within_radius( @point, radius ).map { |p| Point.new( p ) }
+    end
+
+    def reduced_neighbours_within_radius( radius, options={} )
+      GeoDNA.reduce( GeoDNA.neighbours_within_radius( @point, radius ) ).map { |p| Point.new( p ) }
+    end
+
+    def contains( g )
+      g.to_s.match( "^" + @point )
+    end
+  end
+
 # Returns a GeoDNA code (which is a string) for latitude, longitude.
 # Possible options are:
 # * radians => true/false
@@ -204,7 +258,7 @@ module GeoDNA
 
       # if a[1] and b[1] have different signs, we need to translate
       # everything a bit in order for the formulae to work.
-      if a[1] * b[1] < 0.0 && Math.abs( a[1] - b[1] ) > 180.0
+      if a[1] * b[1] < 0.0 && ( a[1] - b[1] ).abs > 180.0
           a = add_vector( ga, 0.0, 180.0 )
           b = add_vector( gb, 0.0, 180.0 )
       end
