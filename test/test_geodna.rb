@@ -86,5 +86,10 @@ class GeoDNATest < Test::Unit::TestCase
     vienna = GeoDNA::Point.new( 48.208889, 16.3725, { "precision" => 22 } )
     found = ( reduced.select { |g| g.contains( vienna ) }.length > 0 )
     assert !found, "Didn't find Vienna anywhere near Nelson."
+
+    wellington_from_geodna = GeoDNA::Point.new( "etctttagatagtgacagtcta" )
+    coords = wellington_from_geodna.coordinates
+    assert_in_delta( coords[0], -41.288889, 0.005 )
+    assert_in_delta( coords[1], 174.777222, 0.005 )
   end
 end

@@ -18,30 +18,43 @@ module GeoDNA
   class Point
     def initialize( *args )
       if args.length == 1
-        @point = args[0]
-        coords = GeoDNA.decode( @point )
-        @lat = coords[0]
-        @lon = coords[1]
+        self.init_with_code( args[0] )
+      else
+        self.init_with_coordinates( *args )
+      end
+    end
+
+    def init_with_code( code )
+      @point = code
+      coords = GeoDNA.decode( @point )
+      @lat = coords[0]
+      @lon = coords[1]
+      @options = {
+        :radians => true,
+        :precision => @point.length,
+      }
+    end
+
+    def init_with_coordinates( *args )
+      @lat = args[0]
+      @lon = args[1]
+      if args.length > 2
+        @options = args[2]
+      else
         @options = {
           :radians => true,
-          :precision => @point.length,
         }
-      else
-        @lat = args[0]
-        @lon = args[1]
-        if args.length > 2
-          @options = args[2]
-        else
-          @options = {
-            :radians => true,
-          }
-        end
-        @point = GeoDNA.encode( @lat, @lon, @options )
       end
+      @point = GeoDNA.encode( @lat, @lon, @options )
     end
 
     def to_s
       return @point
+    end
+
+    def coordinates
+      # TODO:kd - maybe change this to return two values?
+      return [ @lat, @lon ]
     end
 
     def add_vector( dx, dy )
@@ -155,8 +168,6 @@ module GeoDNA
     end
     return [ lat, lon ]
   end
-
-  #  # locates the min/max lat/lons around the geo_dna
 
   def bounding_box( geodna )
     chars = geodna.split(//)
