@@ -4,10 +4,10 @@ require 'test/unit'
 class GeoDNATest < Test::Unit::TestCase
 
   def test_must_encode_correctly
-    wellington = GeoDNA.encode( -41.288889, 174.777222, { "precision" => 22 } )
+    wellington = GeoDNA.encode( -41.288889, 174.777222, { :precision => 22 } )
     assert_equal wellington, "etctttagatagtgacagtcta", "Encoded Wellington correctly"
 
-    nelson = GeoDNA.encode( -41.283333, 173.283333, { "precision" => 16 } )
+    nelson = GeoDNA.encode( -41.283333, 173.283333, { :precision => 16 } )
     assert_equal nelson, 'etcttgctagcttagt', "Encode Nelson correctly"
 
     somewhere = GeoDNA.encode( 7.0625, -95.677068 )
@@ -26,7 +26,7 @@ class GeoDNATest < Test::Unit::TestCase
 
   def test_add_vector
     # This add_vector crosses the 180.0 line:
-    wellington = GeoDNA.encode( -41.288889, 174.777222, { "precision" => 22 } )
+    wellington = GeoDNA.encode( -41.288889, 174.777222, { :precision => 22 } )
     point = GeoDNA.add_vector( wellington, 10.0, 10.0 )
     assert_in_delta( point[0], -31.288889, 0.005 )
     assert_in_delta( point[1], -175.222777, 0.005 )
@@ -48,8 +48,8 @@ class GeoDNATest < Test::Unit::TestCase
   end
 
   def test_distance
-    wellington = GeoDNA.encode( -41.288889, 174.777222, { "precision" => 22 } )
-    nelson = GeoDNA.encode( -41.283333, 173.283333, { "precision" => 16 } )
+    wellington = GeoDNA.encode( -41.288889, 174.777222, { :precision => 22 } )
+    nelson = GeoDNA.encode( -41.283333, 173.283333, { :precision => 16 } )
 
     distance = GeoDNA.distance_in_km( wellington, nelson )
 
@@ -57,33 +57,33 @@ class GeoDNATest < Test::Unit::TestCase
   end
 
   def test_reduce
-    wellington = GeoDNA.encode( -41.288889, 174.777222, { "precision" => 22 } )
-    nelson = GeoDNA.encode( -41.283333, 173.283333, { "precision" => 16 } )
+    wellington = GeoDNA.encode( -41.288889, 174.777222, { :precision => 22 } )
+    nelson = GeoDNA.encode( -41.283333, 173.283333, { :precision => 16 } )
 
-    neighbours = GeoDNA.neighbours_within_radius( nelson, 140.0, { "precision" => 11 } )
+    neighbours = GeoDNA.neighbours_within_radius( nelson, 140.0, { :precision => 11 } )
     reduced = GeoDNA.reduce( neighbours )
 
     found = ( reduced.select { |g| wellington.match("^" + g) }.length > 0 )
     assert found, "Found Wellington in proximity to Nelson."
 
-    vienna = GeoDNA.encode( 48.208889, 16.3725, { "precision" => 22 } )
+    vienna = GeoDNA.encode( 48.208889, 16.3725, { :precision => 22 } )
     found = ( reduced.select { |g| vienna.match("^" + g) }.length > 0 )
     assert !found, "Didn't find Vienna anywhere near Nelson."
   end
 
   def test_oo_api
-    wellington = GeoDNA::Point.new( -41.288889, 174.777222, { "precision" => 22 } )
-    nelson     = GeoDNA::Point.new( -41.283333, 173.283333, { "precision" => 16 } )
+    wellington = GeoDNA::Point.new( -41.288889, 174.777222, { :precision => 22 } )
+    nelson     = GeoDNA::Point.new( -41.283333, 173.283333, { :precision => 16 } )
 
     assert_equal wellington.to_s, "etctttagatagtgacagtcta", "Encoded Wellington correctly"
     assert_equal nelson.to_s, "etcttgctagcttagt", "Encode Nelson correctly"
 
-    reduced = nelson.reduced_neighbours_within_radius( 140.0, { "precision" => 11 } )
+    reduced = nelson.reduced_neighbours_within_radius( 140.0, { :precision => 11 } )
     found = ( reduced.select { |g| g.contains( wellington ) }.length > 0 )
 
     assert found, "Found Wellington in proximity to Nelson."
 
-    vienna = GeoDNA::Point.new( 48.208889, 16.3725, { "precision" => 22 } )
+    vienna = GeoDNA::Point.new( 48.208889, 16.3725, { :precision => 22 } )
     found = ( reduced.select { |g| g.contains( vienna ) }.length > 0 )
     assert !found, "Didn't find Vienna anywhere near Nelson."
 

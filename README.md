@@ -107,7 +107,7 @@ Returns [ latitude, longitude ] of the point.
     new_point = point.add_vector( dy, dx )
 
 Returns a new point object representing the original point with the
-deltas added.  The deltas are always in radians, and latitude
+deltas added.  The deltas are always in degrees, and latitude
 comes first (which is the north-south axis, remember).
 
 ### `neighbours`
@@ -123,8 +123,7 @@ GeoDNA codes of equal size.
 
 Returns the distance in km to the point represented by `code`.
 
-### `neighbours_within_radius`
-### `reduced_neighbours_within_radius`
+### `neighbours_within_radius`, `reduced_neighbours_within_radius`
 
     neighbours = point.neighbours_within_radius( radius )
     reduced    = point.reduced_neighbours_within_radius( radius )

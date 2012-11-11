@@ -98,8 +98,8 @@ module GeoDNA
 #
 
   def encode( latitude, longitude, options={} )
-    precision = options['precision'] || 22
-    radians   = options['radians']   || false
+    precision = options[:precision] || 22
+    radians   = options[:radians]   || false
 
     geodna = ''
     loni = []
@@ -164,7 +164,7 @@ module GeoDNA
     lat = ( lati[0] + lati[1] ) / 2.0
     lon = ( loni[0] + loni[1] ) / 2.0
 
-    if options['radians']
+    if options[:radians]
       return [ deg2rad( lat ), deg2rad( lon ) ]
     end
     return [ lat, lon ]
@@ -253,15 +253,15 @@ module GeoDNA
 
   def point_from_point_bearing_and_distance( geodna, bearing, distance, options={} )
     distance = distance * 1000; # make it metres instead of kilometres
-    precision = options['precision'] || geodna.length
-    bits = decode( geodna, { "radians" => true } )
+    precision = options[:precision] || geodna.length
+    bits = decode( geodna, { :radians => true } )
     lat1 = bits[0]
     lon1 = bits[1]
     lat2 = Math.asin( Math.sin( lat1 ) * Math.cos( distance / RADIUS_OF_EARTH ) +
                       Math.cos( lat1 ) * Math.sin( distance / RADIUS_OF_EARTH ) * Math.cos( bearing ) )
     lon2 = lon1 + Math.atan2( Math.sin( bearing ) * Math.sin( distance / RADIUS_OF_EARTH ) * Math.cos( lat1 ),
                       Math.cos( distance / RADIUS_OF_EARTH ) - Math.sin( lat1 ) * Math.sin( lat2 ))
-    encode( lat2, lon2, { "precision" => precision, "radians" => true } )
+    encode( lat2, lon2, { :precision => precision, :radians => true } )
   end
 
   def distance_in_km( ga, gb )
@@ -296,7 +296,7 @@ module GeoDNA
 #   - +[neigbouring codes within radius]+def radius]+
 #
   def neighbours_within_radius( geodna, radius, options={} )
-      options['precision'] = options['precision'] || 12
+      options[:precision] = options[:precision] || 12
 
       neighbours = []
       rh = radius * SQRT2
