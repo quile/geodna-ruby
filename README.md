@@ -242,7 +242,7 @@ for you.
 
 # BUGS
 
-Please report bugs relevant to `GeoDNA` to <info[at]kyledawkins.com>.
+Please report bugs relevant to `GeoDNA` to *info[at]kyledawkins.com*.
 
 # CONTRIBUTING
 
