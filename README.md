@@ -49,8 +49,8 @@ It's just basic space partitioning, really.
 
 # DESCRIPTION
 
-NEW: see an interactive demo of Geo::DNA codes at
-http://www.geodna.org/docs/google-maps.html
+NEW: see an interactive demo of GeoDNA codes at
+_http://www.geodna.org/docs/google-maps.html_
 
 This is a Ruby version of the Python "geoprint" system that we developed
 a few years back at Action Without Borders.
