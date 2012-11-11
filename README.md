@@ -49,6 +49,8 @@ It's just basic space partitioning, really.
 
 # DESCRIPTION
 
+See the website for more information: *http://www.geodna.org*
+
 NEW: see an interactive demo of GeoDNA codes at
 _http://www.geodna.org/docs/google-maps.html_
 
