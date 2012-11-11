@@ -57,8 +57,9 @@ module GeoDNA
       return [ @lat, @lon ]
     end
 
-    def add_vector( dx, dy )
-      GeoDNA.add_vector( @point, dx, dy )
+    def add_vector( dy, dx )
+      coords = GeoDNA.add_vector( @point, dy, dx )
+      GeoDNA::Point.new( *coords )
     end
 
     def neighbours
@@ -66,7 +67,7 @@ module GeoDNA
     end
 
     def distance_in_km( geodna )
-      GeoDNA.distance_in_km( @point, geodna )
+      GeoDNA.distance_in_km( @point, geodna.to_s )
     end
 
     def neighbours_within_radius( radius, options={} )

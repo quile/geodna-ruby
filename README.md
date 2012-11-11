@@ -78,12 +78,73 @@ way that is more conducive to stem-based searching (which is probably
 the a common use of these hashing systems).
 
 
+## OO-STYLE
+
+### Construction
+
+You can represent a point on the surface of the earth using the GeoDNA::Point
+class.   You can create an instance using either latitude and longitude:
+
+    point = GeoDNA::Point.new( latitude, longitude, options )
+
+or using a GeoDNA code
+
+    point = GeoDNA::Point.new( code )
+
+There is nothing internally different about points created using the
+two different constructors.
+
+## METHODS
+
+### `coordinates`
+
+    coordinates = point.coordinates
+
+Returns [ latitude, longitude ] of the point.
+
+### `add_vector`
+
+    new_point = point.add_vector( dy, dx )
+
+Returns a new point object representing the original point with the
+deltas added.  The deltas are always in radians, and latitude
+comes first (which is the north-south axis, remember).
+
+### `neighbours`
+
+    neighbours = point.neighbours
+
+Returns an array of GeoDNA::Point objects representing the eight neighbouring
+GeoDNA codes of equal size.
+
+### `distance_in_km`
+
+    distance = point.distance_in_km( code or point )
+
+Returns the distance in km to the point represented by `code`.
+
+### `neighbours_within_radius`
+### `reduced_neighbours_within_radius`
+
+    neighbours = point.neighbours_within_radius( radius )
+    reduced    = point.reduced_neighbours_within_radius( radius )
+
+These return the GeoDNA::Point objects representing all the GeoDNA codes
+within a radius of a given point.  The results from `neighbours_within_radius`
+will all be of the same size as the given GeoDNA::Point.  The results
+from `reduced_neighbours_within_radius` will be of any size greater than or
+equal to the size of the original point.   If you wish to calculate all
+the GeoDNA codes within a given radius for the purpose of searching,
+you need to call the `reduced_neighbours_within_radius` method to get a
+minimal covering set of all GeoDNA codes, and then use those to perform
+your search.
+
 
 ## FUNCTIONS
 
 ### `encode`
 
-     code = GeoDNA.encode( latitude, longitude, options);
+    code = GeoDNA.encode( latitude, longitude, options);
 
 Returns a GeoDNA code (which is a string) for latitude, longitude.
 Possible options are:
@@ -150,9 +211,9 @@ you *don't* reduce the list, you *can't* perform stem matching.
 
 
 
-### `bounding_box_geo_dna`
+### `bounding_box`
 
-    box = GeoDNA.bounding_box_geo_dna( code );
+    box = GeoDNA.bounding_box( code );
 
 This returns an array containing two arrays:
 
