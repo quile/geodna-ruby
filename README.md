@@ -256,7 +256,7 @@ Some other stuff.
 
 # AUTHOR
 
-Kyle Dawkins, <info[at]kyledawkins.com>
+Kyle Dawkins, *info[at]kyledawkins.com*
 
 
 
