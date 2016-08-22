@@ -360,7 +360,7 @@ module GeoDNA
         if codes.has_key?( code )
           parent = code[ 0, code.length - 1 ]
 
-            if codes.has_key?( parent + 'a' ) && codes.has_key?( parent + 't' ) && codes.has_key?( parent + 'g' ) && codes.has_key?( parent + 'c' )
+          if codes.has_key?( parent + 'a' ) && codes.has_key?( parent + 't' ) && codes.has_key?( parent + 'g' ) && codes.has_key?( parent + 'c' )
                 codes.delete( parent + 'a' )
                 codes.delete( parent + 't' )
                 codes.delete( parent + 'g' )
